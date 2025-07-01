@@ -1,6 +1,6 @@
 # 🚗 Vehicle TCO Revenue Model
 
-A comprehensive Streamlit application for analyzing vehicle Total Cost of Ownership (TCO) and projecting revenue streams from partnerships and services.
+A comprehensive Streamlit application for analyzing vehicle Total Cost of Ownership (TCO) and projecting revenue streams from partnerships, services, and user growth.
 
 ## 📊 Features
 
@@ -12,9 +12,10 @@ A comprehensive Streamlit application for analyzing vehicle Total Cost of Owners
 
 ### Revenue Projections
 - **Partnership Tiers**: Basic, Premium, Enterprise with different revenue multipliers
-- **Multiple Revenue Streams**: Partnership fees, data analytics, maintenance services, insurance partnerships
+- **Multiple Revenue Streams**: Service providers, insurance, parts retailers, fuel, financial, data, enterprise SaaS, user SaaS
+- **User Growth Modeling**: Churn, engagement, and growth rates
 - **Growth Modeling**: 15% annual revenue growth with market expansion
-- **Scalable Revenue**: Revenue scales with partner count and vehicle complexity
+- **Scalable Revenue**: Revenue scales with partner count, user base, and vehicle complexity
 
 ### Interactive Dashboard
 - **Real-time Calculations**: Instant updates as parameters change
@@ -34,7 +35,7 @@ A comprehensive Streamlit application for analyzing vehicle Total Cost of Owners
 
 2. **Install dependencies**:
    ```bash
-   pip install -r requirements.txt
+   pip3 install -r requirements.txt
    ```
 
 3. **Run the application**:
@@ -49,24 +50,25 @@ A comprehensive Streamlit application for analyzing vehicle Total Cost of Owners
 ```
 vehicle-tco-model/
 ├── app.py                 # Main Streamlit application
-├── revenue_model.py       # Business logic and calculations
+├── revenue_model.py       # Business logic and calculations (dataclass-based)
 ├── requirements.txt       # Python dependencies
 ├── .streamlit/
 │   └── config.toml       # Streamlit configuration
+├── test_model.py         # Model test script
 └── README.md             # This file
 ```
 
 ## 🎯 How to Use
 
-### 1. Configure Vehicle Parameters
+### 1. Configure Vehicle & Market Parameters
 - Select vehicle type (EV, Hybrid, Gasoline, Diesel)
 - Set base price, annual mileage, and ownership period
 - Adjust fuel prices and electricity rates
 
-### 2. Set Partnership Parameters
+### 2. Set Partnership & User Growth Parameters
 - Choose partnership tier (Basic, Premium, Enterprise)
 - Set number of partners
-- Review revenue projections
+- User growth, churn, and engagement are modeled in the backend (can be exposed in UI)
 
 ### 3. Analyze Results
 - View key metrics in the dashboard
@@ -88,47 +90,50 @@ vehicle-tco-model/
 - **Registration**: State/federal tax calculations
 
 ### Revenue Projections
-- **Partnership Fees**: Tier-based with partner count scaling
-- **Data Analytics**: Mileage-based revenue from telematics
-- **Maintenance Services**: Complexity-based service revenue
-- **Insurance Partnerships**: Value-based insurance revenue
+- **Service Providers**: Jiffy Lube, mechanics, dealerships, tire centers
+- **Insurance Partnerships**: Policy referrals, claims processing
+- **Parts Retailers**: AutoZone, Amazon, RockAuto
+- **Fuel Partnerships**: Shell, GasBuddy
+- **Financial Services**: Plaid, credit cards, QuickBooks
+- **Data Providers**: Jato, KBB, CARFAX
+- **Enterprise Solutions**: Dealership SaaS, fleet management
+- **User SaaS**: Revenue from active user base
+- **User Growth**: Modeled with churn and engagement rates
 
 ### Key Assumptions
 - 15% annual revenue growth
 - Inflation adjustment for all costs and revenues
 - Age-progressive maintenance costs
-- Partner count scaling effects
+- Partner count and user base scaling effects
 
 ## 🛠️ Customization
 
-### Adding New Vehicle Types
-1. Update `efficiency_params` in `revenue_model.py`
-2. Add depreciation, maintenance, and insurance rates
-3. Update vehicle type selection in `app.py`
+### Adding New Revenue Streams or Vehicle Types
+- Update dataclasses in `revenue_model.py`
+- Add new logic to `VehicleTCORevenueModel`
+- Update UI in `app.py` if you want to expose new parameters
 
-### Modifying Revenue Streams
-1. Edit `partnership_multipliers` in `revenue_model.py`
-2. Adjust growth rates in `calculate_revenue_projections()`
-3. Update revenue stream calculations as needed
+### Modifying User Growth
+- Adjust `UserGrowthParams` dataclass or expose in the sidebar
 
 ### Styling Changes
-1. Modify CSS in `app.py` for visual changes
-2. Update `.streamlit/config.toml` for theme changes
-3. Customize chart colors and layouts
+- Modify CSS in `app.py` for visual changes
+- Update `.streamlit/config.toml` for theme changes
+- Customize chart colors and layouts
 
 ## 📊 Example Scenarios
 
-### Electric Vehicle with Premium Partnerships
-- **Vehicle**: $45,000 Electric Vehicle
-- **Usage**: 15,000 miles/year for 5 years
-- **Partnerships**: 10 Premium tier partners
-- **Result**: Typically shows lower TCO due to reduced fuel costs and higher revenue from data analytics
+### Electric Vehicle with Enterprise Partnerships
+- **Vehicle**: $80,000 Electric Vehicle
+- **Usage**: 25,000 miles/year for 8 years
+- **Partnerships**: 30 Enterprise tier partners
+- **Result**: High revenue from enterprise and user SaaS, lower TCO due to reduced fuel costs
 
-### High-Mileage Gasoline Vehicle
-- **Vehicle**: $35,000 Gasoline Vehicle
-- **Usage**: 25,000 miles/year for 3 years
+### High-Mileage Hybrid with Basic Partnerships
+- **Vehicle**: $35,000 Hybrid
+- **Usage**: 20,000 miles/year for 5 years
 - **Partnerships**: 5 Basic tier partners
-- **Result**: Higher fuel costs but potentially profitable with maintenance service revenue
+- **Result**: Balanced TCO and revenue, strong service provider revenue
 
 ## 🔧 Technical Details
 
