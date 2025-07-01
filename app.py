@@ -206,34 +206,6 @@ def apply_scenario(scenario_type):
         model.parts_retail.commission_rate = 0.12
         model.financial_services.connection_rate = 0.65
 
-def apply_custom_parameters(params):
-    """Apply custom parameters to the financial model"""
-    model = st.session_state.model
-    
-    # User parameters
-    model.user_base.active_users = params['user_params']['active_users']
-    model.user_base.monthly_growth_rate = params['user_params']['growth_rate'] / 100
-    model.user_base.engagement_rate = params['user_params']['engagement_rate'] / 100
-    
-    # Service parameters
-    model.service_providers.avg_commission_rate = params['service_params']['commission_rate'] / 100
-    model.service_providers.bookings_per_1k_users = params['service_params']['bookings_per_user']
-    model.service_providers.avg_service_value = params['service_params']['avg_service_value']
-    
-    # Insurance parameters
-    model.insurance.referral_commission = params['insurance_params']['referral_commission']
-    model.insurance.conversion_rate = params['insurance_params']['conversion_rate'] / 100
-    model.insurance.claims_processing_fee = params['insurance_params']['claims_fee']
-    
-    # Parts parameters
-    model.parts_retail.commission_rate = params['parts_params']['commission_rate'] / 100
-    model.parts_retail.orders_per_1k_users = params['parts_params']['orders_per_user']
-    model.parts_retail.avg_order_value = params['parts_params']['avg_order_value']
-    
-    # Financial parameters
-    model.financial_services.monthly_fee_per_user = params['financial_params']['monthly_fee_per_user']
-    model.financial_services.connection_rate = params['financial_params']['connection_rate'] / 100
-
 def create_revenue_summary(results):
     """Create revenue summary cards"""
     latest = results.iloc[-1]
@@ -406,7 +378,7 @@ def main():
     params = create_input_controls()
     
     # Apply parameters to model
-    apply_custom_parameters(params)
+    apply_scenario(params['scenario'])
     
     # Run financial projections
     with st.spinner("🔄 Calculating financial projections..."):
