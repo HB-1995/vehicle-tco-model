@@ -127,9 +127,6 @@ st.markdown("""
 if 'model' not in st.session_state:
     st.session_state.model = VehicleTCORevenueModel()
 
-if 'scenario' not in st.session_state:
-    st.session_state.scenario = 'moderate'
-
 # Scenario Presets
 SCENARIO_PRESETS = {
     "Conservative": dict(vehicle_type="Hybrid", base_price=35000, annual_mileage=12000, ownership_years=5, partnership_tier="Basic", partner_count=5, fuel_price=3.00, electricity_rate=0.10, inflation_rate=2.0),
@@ -176,35 +173,6 @@ def create_input_controls():
     inflation_rate = st.sidebar.slider("Annual Inflation Rate (%)", 0.0, 15.0, 2.5, 0.1, key="inflation_rate")
     
     return dict(vehicle_type=vehicle_type, base_price=base_price, annual_mileage=annual_mileage, ownership_years=ownership_years, partnership_tier=partnership_tier, partner_count=partner_count, fuel_price=fuel_price, electricity_rate=electricity_rate, inflation_rate=inflation_rate)
-
-def apply_scenario(scenario_type):
-    """Apply predefined financial scenarios"""
-    st.session_state.scenario = scenario_type
-    model = st.session_state.model
-    
-    if scenario_type == 'conservative':
-        model.user_base.monthly_growth_rate = 0.04
-        model.user_base.engagement_rate = 0.50
-        model.service_providers.avg_commission_rate = 0.08
-        model.insurance.conversion_rate = 0.025
-        model.parts_retail.commission_rate = 0.05
-        model.financial_services.connection_rate = 0.30
-    
-    elif scenario_type == 'moderate':
-        model.user_base.monthly_growth_rate = 0.08
-        model.user_base.engagement_rate = 0.65
-        model.service_providers.avg_commission_rate = 0.12
-        model.insurance.conversion_rate = 0.035
-        model.parts_retail.commission_rate = 0.08
-        model.financial_services.connection_rate = 0.45
-    
-    elif scenario_type == 'aggressive':
-        model.user_base.monthly_growth_rate = 0.15
-        model.user_base.engagement_rate = 0.80
-        model.service_providers.avg_commission_rate = 0.18
-        model.insurance.conversion_rate = 0.06
-        model.parts_retail.commission_rate = 0.12
-        model.financial_services.connection_rate = 0.65
 
 def create_revenue_summary(results):
     """Create revenue summary cards"""
@@ -377,9 +345,6 @@ def main():
     # Create input controls
     params = create_input_controls()
     
-    # Apply parameters to model
-    apply_scenario(params['scenario'])
-    
     # Run financial projections
     with st.spinner("🔄 Calculating financial projections..."):
         results = st.session_state.model.run_projection(params['projection_params']['months'])
@@ -425,7 +390,6 @@ def main():
     
     with col2:
         model_data = {
-            'scenario': st.session_state.scenario,
             'parameters': params,
             'results': results.to_dict('records'),
             'generated_at': datetime.now().isoformat()

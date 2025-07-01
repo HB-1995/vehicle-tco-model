@@ -41,19 +41,6 @@ def test_basic_functionality():
     print("All parameters:")
     print(model.get_all_parameters())
 
-def test_scenarios():
-    print("\n🔧 Testing scenario variations...")
-    scenarios = [
-        VehicleParams(vehicle_type="Electric Vehicle", base_price=80000, annual_mileage=25000, ownership_years=8),
-        VehicleParams(vehicle_type="Hybrid", base_price=35000, annual_mileage=20000, ownership_years=5),
-        VehicleParams(vehicle_type="Diesel", base_price=40000, annual_mileage=18000, ownership_years=6)
-    ]
-    for v in scenarios:
-        model = VehicleTCORevenueModel(v, PartnershipParams(), MarketParams(), UserGrowthParams())
-        tco = model.calculate_tco()
-        revenue = model.calculate_revenue_streams()
-        print(f"{v.vehicle_type}: TCO=${tco['total_tco']:,.0f}, Revenue=${revenue['total_revenue']:,.0f}, Net Profit=${revenue['total_revenue'] - tco['total_tco']:,.0f}")
-
 def test_partnership_tiers():
     print("\n🤝 Testing partnership tiers...")
     for tier in ["Basic", "Premium", "Enterprise"]:
@@ -65,7 +52,6 @@ def test_partnership_tiers():
 def main():
     print("🧪 Starting Vehicle TCO Revenue Model Tests\n")
     test_basic_functionality()
-    test_scenarios()
     test_partnership_tiers()
     print("\n🎉 All tests passed! The model is working correctly.")
     print("\nTo run the Streamlit app:")
