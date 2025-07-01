@@ -784,6 +784,9 @@ def create_metric_card_dashboard(results):
             <div style='{icon_style}'>👥</div>
             <div style='{title_style}'>User Engagement</div>
             <div style='{value_style}'>{engagement:.1f}% <span style='font-size:1.2rem;'>{'↗️' if engagement >= 70 else '↘️'}</span></div>
+            <div style='font-size:0.98rem;color:#6b7280;margin-bottom:0.2rem;'>
+                {int(latest['engaged_users']):,} / {int(latest['total_users']):,} users
+            </div>
             <div style='{subtitle_style}'>Engaged Users</div>
             {progress_bar(engagement, 100)}
         </div>
@@ -888,13 +891,6 @@ def main():
     if show_table:
         st.markdown("### 💰 Partnership Revenue Projection")
         st.dataframe(results)
-
-    # Show summary metrics
-    st.markdown("### 📊 Key Metrics")
-    latest = results.iloc[-1]
-    st.metric("Total Monthly Revenue", f"${latest['total_monthly_revenue']:,.0f}")
-    st.metric("Active Users", f"{latest['active_users']:,}")
-    st.metric("Engaged Users", f"{latest['engaged_users']:,}")
 
     # Download button
     st.markdown("### 📁 Export Results")
