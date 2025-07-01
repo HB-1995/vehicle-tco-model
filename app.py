@@ -8,6 +8,7 @@ import json
 from datetime import datetime
 import base64
 import traceback
+import plotly.io as pio
 
 # Import the correct financial model
 from revenue_model import PartnershipRevenueModel
@@ -121,53 +122,198 @@ st.markdown("""
 if 'model' not in st.session_state:
     st.session_state.model = PartnershipRevenueModel()
 
-# Header
+# --- Professional Financial Dashboard CSS ---
+st.markdown('''
+<style>
+/* Header */
+.fin-header {
+    background: linear-gradient(90deg, #1f4e79 0%, #2563eb 100%);
+    color: #fff;
+    padding: 2.2rem 2rem 1.2rem 2rem;
+    border-radius: 0 0 18px 18px;
+    box-shadow: 0 4px 24px rgba(31,78,121,0.08);
+    margin-bottom: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.fin-header .brand {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-family: 'Inter', Arial, sans-serif;
+    margin-right: 2rem;
+}
+.fin-header .subtitle {
+    font-size: 1.1rem;
+    font-weight: 400;
+    opacity: 0.85;
+    margin-top: 0.3rem;
+}
+.fin-header .nav {
+    font-size: 1.1rem;
+    font-weight: 500;
+    display: flex;
+    gap: 2rem;
+}
 
-def create_header():
-    st.markdown("""
-    <div class="main-header">
-        <h1>💼 Partnership Revenue Financial Modeller</h1>
-        <p>Comprehensive Financial Analysis for Partnership Revenue Streams</p>
+/* Sidebar */
+section[data-testid="stSidebar"] > div:first-child {
+    background: #f8fafc;
+    border-radius: 0 18px 18px 0;
+    box-shadow: 2px 0 16px rgba(31,78,121,0.06);
+    padding-top: 1.5rem;
+}
+.sidebar-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(31,78,121,0.07);
+    border: 1px solid #e5e7eb;
+    margin-bottom: 1.2rem;
+    padding: 1.2rem 1rem 1rem 1rem;
+    transition: box-shadow 0.2s;
+}
+.sidebar-card:hover {
+    box-shadow: 0 4px 24px rgba(31,78,121,0.13);
+}
+.sidebar-section-header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f4e79;
+    margin-bottom: 0.7rem;
+    letter-spacing: 0.5px;
+}
+.stSlider > div {
+    background: #e5e7eb;
+    border-radius: 8px;
+}
+.stNumberInput input {
+    background: #f3f4f6;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    font-size: 1.1rem;
+}
+.stNumberInput input:focus {
+    border: 1.5px solid #2563eb;
+}
+
+/* Collapsible sections */
+.collapsible {
+    cursor: pointer;
+    padding: 0.5rem 0;
+    border: none;
+    outline: none;
+    background: none;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2563eb;
+    transition: color 0.2s;
+    margin-bottom: 0.2rem;
+}
+.collapsible:hover {
+    color: #1f4e79;
+}
+.collapse-content {
+    max-height: 1000px;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.collapse-content.closed {
+    max-height: 0;
+    padding: 0;
+}
+
+/* Main content grid */
+.fin-main-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.2rem;
+    margin-bottom: 2rem;
+}
+@media (min-width: 900px) {
+    .fin-main-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Card containers */
+.fin-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(31,78,121,0.08);
+    border: 1px solid #e5e7eb;
+    padding: 2rem 1.5rem 1.5rem 1.5rem;
+    margin-bottom: 0.5rem;
+    transition: box-shadow 0.2s;
+    position: relative;
+}
+.fin-card:hover {
+    box-shadow: 0 4px 24px rgba(31,78,121,0.13);
+}
+
+/* Chart containers */
+.fin-chart-container {
+    background: #f8fafc;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 12px rgba(31,78,121,0.07);
+    padding: 1.5rem 1.2rem 1.2rem 1.2rem;
+    margin-bottom: 1.2rem;
+}
+
+</style>
+''', unsafe_allow_html=True)
+
+# --- Custom Header ---
+def create_fin_header():
+    st.markdown('''
+    <div class="fin-header">
+        <div>
+            <span class="brand">💼 Partnership Revenue Financial Modeller</span>
+            <div class="subtitle">Comprehensive Financial Analysis for Partnership Revenue Streams</div>
+        </div>
+        <div class="nav">
+            <!-- Add navigation links if needed -->
+        </div>
     </div>
-    """, unsafe_allow_html=True)
+    ''', unsafe_allow_html=True)
 
-# Only partnership revenue controls
+# --- Sidebar with Card-Based, Collapsible Sections ---
+def create_sidebar_controls():
+    with st.sidebar:
+        with st.expander("👥 User Base Metrics", expanded=True):
+            active_users = st.number_input("Initial Active Users", 100, 1000000, 25000, 1000, key="active_users")
+            monthly_growth_rate = st.slider("Monthly Growth Rate (%)", 0.0, 20.0, 8.0, 0.1, key="monthly_growth_rate") / 100
+            engagement_rate = st.slider("Engagement Rate (%)", 0.0, 100.0, 65.0, 1.0, key="engagement_rate") / 100
+            churn_rate = st.slider("Monthly Churn Rate (%)", 0.0, 20.0, 3.0, 0.1, key="churn_rate") / 100
 
-def create_input_controls():
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("### 👥 User Base Metrics")
-    active_users = st.sidebar.number_input("Initial Active Users", 100, 1000000, 25000, 1000, key="active_users")
-    monthly_growth_rate = st.sidebar.slider("Monthly Growth Rate (%)", 0.0, 20.0, 8.0, 0.1, key="monthly_growth_rate") / 100
-    engagement_rate = st.sidebar.slider("Engagement Rate (%)", 0.0, 100.0, 65.0, 1.0, key="engagement_rate") / 100
-    churn_rate = st.sidebar.slider("Monthly Churn Rate (%)", 0.0, 20.0, 3.0, 0.1, key="churn_rate") / 100
+        with st.expander("🛠️ Service Provider Revenue", expanded=False):
+            avg_commission_rate = st.slider("Avg. Commission Rate (%)", 0.0, 50.0, 12.0, 0.1, key="avg_commission_rate") / 100
+            bookings_per_1k_users = st.number_input("Bookings per 1K Users", 0, 100, 25, 1, key="bookings_per_1k_users")
+            avg_service_value = st.number_input("Avg. Service Value ($)", 0, 10000, 200, 10, key="avg_service_value")
 
-    st.sidebar.markdown("### 🛠️ Service Provider Revenue")
-    avg_commission_rate = st.sidebar.slider("Avg. Commission Rate (%)", 0.0, 50.0, 12.0, 0.1, key="avg_commission_rate") / 100
-    bookings_per_1k_users = st.sidebar.number_input("Bookings per 1K Users", 0, 100, 25, 1, key="bookings_per_1k_users")
-    avg_service_value = st.sidebar.number_input("Avg. Service Value ($)", 0, 10000, 200, 10, key="avg_service_value")
+        with st.expander("🛡️ Insurance Revenue", expanded=False):
+            referral_commission = st.number_input("Referral Commission ($)", 0, 1000, 75, 5, key="referral_commission")
+            conversion_rate = st.slider("Conversion Rate (%)", 0.0, 20.0, 3.5, 0.1, key="conversion_rate") / 100
+            claims_processing_fee = st.number_input("Claims Processing Fee ($)", 0, 100, 15, 1, key="claims_processing_fee")
+            claims_per_1k_users = st.number_input("Claims per 1K Users", 0, 100, 8, 1, key="claims_per_1k_users")
+            policy_retention_bonus = st.number_input("Policy Retention Bonus ($)", 0, 100, 25, 1, key="policy_retention_bonus")
 
-    st.sidebar.markdown("### 🛡️ Insurance Revenue")
-    referral_commission = st.sidebar.number_input("Referral Commission ($)", 0, 1000, 75, 5, key="referral_commission")
-    conversion_rate = st.sidebar.slider("Conversion Rate (%)", 0.0, 20.0, 3.5, 0.1, key="conversion_rate") / 100
-    claims_processing_fee = st.sidebar.number_input("Claims Processing Fee ($)", 0, 100, 15, 1, key="claims_processing_fee")
-    claims_per_1k_users = st.sidebar.number_input("Claims per 1K Users", 0, 100, 8, 1, key="claims_per_1k_users")
-    policy_retention_bonus = st.sidebar.number_input("Policy Retention Bonus ($)", 0, 100, 25, 1, key="policy_retention_bonus")
+        with st.expander("🏪 Parts & Retail Revenue", expanded=False):
+            commission_rate = st.slider("Commission Rate (%)", 0.0, 50.0, 8.0, 0.1, key="commission_rate") / 100
+            orders_per_1k_users = st.number_input("Orders per 1K Users", 0, 200, 45, 1, key="orders_per_1k_users")
+            avg_order_value = st.number_input("Avg. Order Value ($)", 0, 1000, 125, 5, key="avg_order_value")
+            return_rate = st.slider("Return Rate (%)", 0.0, 50.0, 5.0, 0.1, key="return_rate") / 100
 
-    st.sidebar.markdown("### 🏪 Parts & Retail Revenue")
-    commission_rate = st.sidebar.slider("Commission Rate (%)", 0.0, 50.0, 8.0, 0.1, key="commission_rate") / 100
-    orders_per_1k_users = st.sidebar.number_input("Orders per 1K Users", 0, 200, 45, 1, key="orders_per_1k_users")
-    avg_order_value = st.sidebar.number_input("Avg. Order Value ($)", 0, 1000, 125, 5, key="avg_order_value")
-    return_rate = st.sidebar.slider("Return Rate (%)", 0.0, 50.0, 5.0, 0.1, key="return_rate") / 100
+        with st.expander("💳 Financial Services Revenue", expanded=False):
+            monthly_fee_per_user = st.number_input("Monthly Fee per User ($)", 0.0, 100.0, 2.5, 0.1, key="monthly_fee_per_user")
+            connection_rate = st.slider("Connection Rate (%)", 0.0, 100.0, 45.0, 1.0, key="connection_rate") / 100
+            transaction_fee = st.number_input("Transaction Fee ($)", 0.0, 10.0, 0.25, 0.01, key="transaction_fee")
+            transactions_per_user = st.number_input("Transactions per User", 0, 100, 12, 1, key="transactions_per_user")
+            premium_upgrade_rate = st.slider("Premium Upgrade Rate (%)", 0.0, 100.0, 15.0, 1.0, key="premium_upgrade_rate") / 100
 
-    st.sidebar.markdown("### 💳 Financial Services Revenue")
-    monthly_fee_per_user = st.sidebar.number_input("Monthly Fee per User ($)", 0.0, 100.0, 2.5, 0.1, key="monthly_fee_per_user")
-    connection_rate = st.sidebar.slider("Connection Rate (%)", 0.0, 100.0, 45.0, 1.0, key="connection_rate") / 100
-    transaction_fee = st.sidebar.number_input("Transaction Fee ($)", 0.0, 10.0, 0.25, 0.01, key="transaction_fee")
-    transactions_per_user = st.sidebar.number_input("Transactions per User", 0, 100, 12, 1, key="transactions_per_user")
-    premium_upgrade_rate = st.sidebar.slider("Premium Upgrade Rate (%)", 0.0, 100.0, 15.0, 1.0, key="premium_upgrade_rate") / 100
-
-    st.sidebar.markdown("### ⚙️ Projection Settings")
-    months = st.sidebar.slider("Projection Period (Months)", 6, 60, 24, 1, key="months")
+        with st.expander("⚙️ Projection Settings", expanded=False):
+            months = st.slider("Projection Period (Months)", 6, 60, 24, 1, key="months")
 
     return dict(
         active_users=active_users,
@@ -536,7 +682,46 @@ def create_revenue_heatmap(results):
     st.plotly_chart(fig, use_container_width=True)
     st.caption("Select a range to zoom. Hover over cells for exact values. Toggle between absolute and growth rates above.")
 
-def create_gauge_dashboard(results):
+# --- Professional Plotly Theme ---
+pio.templates["finpro"] = go.layout.Template(
+    layout=go.Layout(
+        font=dict(family="Inter, Arial, sans-serif", size=15, color="#374151"),
+        paper_bgcolor="#fff",
+        plot_bgcolor="#f8fafc",
+        colorway=["#2563eb", "#1f4e79", "#52c41a", "#6b7280", "#10b981", "#374151"],
+        xaxis=dict(
+            gridcolor="#e5e7eb",
+            zerolinecolor="#e5e7eb",
+            linecolor="#6b7280",
+            tickfont=dict(color="#374151"),
+            title=dict(font=dict(color="#374151")),
+        ),
+        yaxis=dict(
+            gridcolor="#e5e7eb",
+            zerolinecolor="#e5e7eb",
+            linecolor="#6b7280",
+            tickfont=dict(color="#374151"),
+            title=dict(font=dict(color="#374151")),
+        ),
+        legend=dict(
+            bgcolor="#fff",
+            bordercolor="#e5e7eb",
+            borderwidth=1,
+            font=dict(color="#374151", size=13),
+        ),
+        hoverlabel=dict(
+            bgcolor="#2563eb",
+            font_size=14,
+            font_family="Inter, Arial, sans-serif",
+            bordercolor="#fff"
+        ),
+        margin=dict(l=30, r=30, t=50, b=30),
+        transition=dict(duration=500, easing="cubic-in-out"),
+    )
+)
+
+# --- Professional Metric Card Dashboard ---
+def create_metric_card_dashboard(results):
     latest = results.iloc[-1]
     first = results.iloc[0]
     # Metrics
@@ -545,43 +730,122 @@ def create_gauge_dashboard(results):
     growth_rate = ((latest['total_monthly_revenue'] / first['total_monthly_revenue']) - 1) * 100
     engagement = latest['engaged_users'] / latest['active_users'] * 100 if latest['active_users'] > 0 else 0
     revenue_per_user = latest['total_monthly_revenue'] / latest['active_users'] if latest['active_users'] > 0 else 0
-
-    # Gauge chart helper
-    def gauge_fig(value, title, min_v, max_v, steps, unit="", color_zones=None, target=None):
-        if color_zones is None:
-            color_zones = [(min_v, min_v + (max_v-min_v)*0.4, "#ff4d4f"), (min_v + (max_v-min_v)*0.4, min_v + (max_v-min_v)*0.7, "#faad14"), (min_v + (max_v-min_v)*0.7, max_v, "#52c41a")]
-        fig = go.Figure(go.Indicator(
-            mode = "gauge+number+delta",
-            value = value,
-            number = {'suffix': unit},
-            delta = {'reference': target, 'increasing': {'color': '#52c41a'}, 'decreasing': {'color': '#ff4d4f'}} if target else None,
-            gauge = {
-                'axis': {'range': [min_v, max_v]},
-                'bar': {'color': '#667eea'},
-                'steps': [
-                    {'range': [z[0], z[1]], 'color': z[2]} for z in color_zones
-                ],
-                'threshold': {'line': {'color': '#222', 'width': 4}, 'thickness': 0.75, 'value': target} if target else None
-            },
-            title = {'text': title}
-        ))
-        fig.update_layout(margin=dict(l=10, r=10, t=40, b=10), height=260)
-        return fig
-
+    # Trends (mini-sparklines)
+    trend = results['total_monthly_revenue'].pct_change().fillna(0).tail(6).values
+    trend_icon = "↗️" if trend[-1] >= 0 else "↘️"
+    # Card styles
+    card_style = """
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(31, 78, 121, 0.08);
+        border: 1px solid #e5e7eb;
+        padding: 2rem 1.5rem 1.5rem 1.5rem;
+        margin-bottom: 0.5rem;
+        min-height: 140px;
+        transition: box-shadow 0.2s;
+        position: relative;
+    """
+    icon_style = "font-size: 2.2rem; color: #2563eb; margin-bottom: 0.5rem;"
+    title_style = "font-size: 1.1rem; color: #374151; font-weight: 600; margin-bottom: 0.2rem; letter-spacing: 0.5px;"
+    value_style = "font-size: 2.1rem; color: #1f4e79; font-weight: 700; margin-bottom: 0.2rem;"
+    subtitle_style = "font-size: 0.95rem; color: #6b7280; font-weight: 400; margin-bottom: 0.5rem;"
+    bar_bg = "#e5e7eb"
+    bar_fg = "linear-gradient(90deg, #2563eb 0%, #1f4e79 100%)"
+    bar_height = "12px"
+    def progress_bar(value, max_value, color=bar_fg):
+        pct = min(max(value / max_value, 0), 1)
+        return f'''<div style="background:{bar_bg};border-radius:8px;width:100%;height:{bar_height};overflow:hidden;">
+            <div style="background:{color};width:{pct*100:.1f}%;height:{bar_height};transition:width 0.5s;"></div>
+        </div>'''
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.plotly_chart(gauge_fig(total_revenue, "Total Monthly Revenue", 0, target_revenue*2, 5, unit="$", target=target_revenue), use_container_width=True)
+        st.markdown(f"""
+        <div style='{card_style}' class='metric-card'>
+            <div style='{icon_style}'>💰</div>
+            <div style='{title_style}'>Total Monthly Revenue</div>
+            <div style='{value_style}'>${total_revenue:,.0f} <span style='font-size:1.2rem;'>{trend_icon}</span></div>
+            <div style='{subtitle_style}'>Target: ${target_revenue:,.0f}</div>
+            {progress_bar(total_revenue, target_revenue*2)}
+        </div>
+        """, unsafe_allow_html=True)
     with col2:
-        st.plotly_chart(gauge_fig(growth_rate, "Growth Rate", -20, 100, 5, unit="%", color_zones=[(-20, 0, "#ff4d4f"), (0, 20, "#faad14"), (20, 100, "#52c41a")], target=20), use_container_width=True)
+        st.markdown(f"""
+        <div style='{card_style}' class='metric-card'>
+            <div style='{icon_style}'>📈</div>
+            <div style='{title_style}'>Growth Rate</div>
+            <div style='{value_style}'>{growth_rate:.1f}% <span style='font-size:1.2rem;'>{'↗️' if growth_rate >= 0 else '↘️'}</span></div>
+            <div style='{subtitle_style}'>Annualized</div>
+            {progress_bar(growth_rate, 100)}
+        </div>
+        """, unsafe_allow_html=True)
     with col3:
-        st.plotly_chart(gauge_fig(engagement, "User Engagement", 0, 100, 5, unit="%", color_zones=[(0, 40, "#ff4d4f"), (40, 70, "#faad14"), (70, 100, "#52c41a")], target=70), use_container_width=True)
+        st.markdown(f"""
+        <div style='{card_style}' class='metric-card'>
+            <div style='{icon_style}'>👥</div>
+            <div style='{title_style}'>User Engagement</div>
+            <div style='{value_style}'>{engagement:.1f}% <span style='font-size:1.2rem;'>{'↗️' if engagement >= 70 else '↘️'}</span></div>
+            <div style='{subtitle_style}'>Engaged Users</div>
+            {progress_bar(engagement, 100)}
+        </div>
+        """, unsafe_allow_html=True)
     with col4:
-        st.plotly_chart(gauge_fig(revenue_per_user, "Revenue per User", 0, 10, 5, unit="$", color_zones=[(0, 2, "#ff4d4f"), (2, 5, "#faad14"), (5, 10, "#52c41a")], target=5), use_container_width=True)
+        st.markdown(f"""
+        <div style='{card_style}' class='metric-card'>
+            <div style='{icon_style}'>🧮</div>
+            <div style='{title_style}'>Revenue per User</div>
+            <div style='{value_style}'>${revenue_per_user:.2f} <span style='font-size:1.2rem;'>{'↗️' if revenue_per_user >= 5 else '↘️'}</span></div>
+            <div style='{subtitle_style}'>Per Active User</div>
+            {progress_bar(revenue_per_user, 10)}
+        </div>
+        """, unsafe_allow_html=True)
     st.markdown("<hr style='margin: 1.5rem 0 2rem 0; border-top: 2px solid #e0e0e0;'>", unsafe_allow_html=True)
 
+# --- Professional Revenue Charts ---
+def create_professional_revenue_charts(results):
+    # Revenue over time (line + area)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=results['month'],
+        y=results['total_monthly_revenue'],
+        mode='lines',
+        name='Total Revenue',
+        line=dict(width=4, color="#2563eb"),
+        fill='tozeroy',
+        fillcolor="rgba(37,99,235,0.08)",
+        hovertemplate='<b>Total Revenue</b>: $%{y:,.0f}<br>Month: %{x}'
+    ))
+    # Add individual revenue streams
+    streams = [
+        ("Service Providers", 'service_revenue', "#1f4e79"),
+        ("Insurance", 'insurance_revenue', "#52c41a"),
+        ("Parts & Retail", 'parts_revenue', "#6b7280"),
+        ("Financial Services", 'financial_revenue', "#10b981")
+    ]
+    for name, col, color in streams:
+        if col in results:
+            fig.add_trace(go.Scatter(
+                x=results['month'],
+                y=results[col],
+                mode='lines',
+                name=name,
+                line=dict(width=2, color=color, dash='solid'),
+                hovertemplate=f'<b>{name}</b>: $%{{y:,.0f}}<br>Month: %{{x}}'
+            ))
+    fig.update_layout(
+        template="finpro",
+        title="<b>Revenue Growth & Streams</b>",
+        xaxis_title="Month",
+        yaxis_title="Monthly Revenue ($)",
+        height=420,
+        hovermode='x unified',
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        margin=dict(l=20, r=20, t=60, b=20)
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
 def main():
-    create_header()
-    params = create_input_controls()
+    create_fin_header()
+    params = create_sidebar_controls()
     model = st.session_state.model
     # User Base
     model.user_base.active_users = params['active_users']
@@ -614,8 +878,10 @@ def main():
     with st.spinner("🔄 Calculating financial projections..."):
         results = model.run_projection(params['months'])
 
-    # Gauge dashboard at the top
-    create_gauge_dashboard(results)
+    # Professional metric card dashboard at the top
+    create_metric_card_dashboard(results)
+    # Professional revenue charts
+    create_professional_revenue_charts(results)
 
     # Checkbox in sidebar to show/hide the table
     show_table = st.sidebar.checkbox("Show Revenue Projection Table", value=False)
@@ -639,8 +905,6 @@ def main():
         mime="text/csv"
     )
 
-    # Animated chart
-    create_animated_revenue_chart(results)
     # Sankey diagram
     create_revenue_sankey(results)
     # Heatmap
